@@ -17,9 +17,9 @@ void setup() {
  
 void loop() {
   int PH_Value = readPH();  // PH
-  Serial.print("CO2 value:");
-  Serial.println(analogRead(CO_Sensor));
   int Soil_Value = analogRead(Soil_Sensor); // 0에 가까울수록 수분이 많고, 1023에 가까울수록 수분이 적다
+  int CO_Value = analogRead(CO_Sensor);
+  Serial.println(String(CO_Value)+" "+String(Soil_Value)+" "+String(PH_Value));
   if(Soil_Value > 800){
     int Water_Depth = analogRead(Water_Sensor);
     if(Water_Depth < 400){
@@ -31,10 +31,6 @@ void loop() {
   }else{
     Motor(HIGH, 0);
   }
-  Serial.print("Soil Moisture value:");
-  Serial.println(Soil_Value);
-  Serial.print("PH value:");
-  Serial.println(PH_Value);
   delay(10000);
 }
 
