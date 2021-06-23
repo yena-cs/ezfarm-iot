@@ -24,12 +24,7 @@ void loop() {
   int t_Sensor = dht.readTemperature();  // 온도
   int CDS_Value = analogRead(CDS_Sensor); // 조도
 
-  Serial.print("CDS value:"); // 광량과 수치는 반비례
-  Serial.println(CDS_Value);
-  Serial.print("humidity value:");
-  Serial.println(h_Sensor);
-  Serial.print("temperature value:");
-  Serial.println(t_Sensor);
+  Serial.println(String(CDS_Value)+" "+String(h_Sensor)+" "+String(t_Sensor));
   digitalWrite(prop_SensorA, LOW);
   digitalWrite(prop_SensorB, LOW);
   if(t_Sensor > 30){
