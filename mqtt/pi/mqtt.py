@@ -36,6 +36,7 @@ while True:
         ser_num = str(ser.readline())
         ser_num = re.sub('[^0-9,]', "", ser_num)
         ser_num = ser_num.split(',')
+        print(ser_num)
         break
     else:
          print("Not data Sensor")
@@ -44,6 +45,8 @@ while True:
     time.sleep(1)
 
 if ser_num[0] != '1':
+    ser.close()
+    ser2.close()
     tmp = port
     port = port2
     port2 = tmp
@@ -110,6 +113,7 @@ def on_message(mqttc, obj, msg):
         j = json.loads(payload)
         if str(j['farm_id']) == farm_id:
             message = sensor_data()
+            time.sleep(1)
             mqtt_client.publish(sensorControl_pub, json.dumps(message), qos=1)
             print("Published: '" + json.dumps(message) + "' to the topic: " + sensorControl_pub)
 
