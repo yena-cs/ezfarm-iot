@@ -25,49 +25,38 @@ PATH_TO_ROOT = "./AmazonRootCA1.pem"
 time.sleep(1)
 port = "/dev/ttyUSB0"
 port2 = "/dev/ttyUSB1"
+port3 = "/dev/ttyUSB2"
 
-while True:
-    #if os.path.isdir(port2): #and os.path.isdir(port2):
-    ser = serial.Serial(port, 9600)
-    ser2 = serial.Serial(port2, 9600)
-    ser.flushInput()
-    ser2.flushInput()
-    if ser.readable() and ser2.readable():
-        ser_num = str(ser.readline())
-        ser_num = re.sub('[^0-9,]', "", ser_num)
-        ser_num = ser_num.split(',')
-        print(ser_num)
-        break
-    else:
-         print("Not data Sensor")
-    #else:
-        #print("Not Connect Arduino")
-    time.sleep(1)
 
-if ser_num[0] != '1':
-    ser.close()
-    ser2.close()
-    tmp = port
-    port = port2
-    port2 = tmp
-    ser = serial.Serial(port, 9600)
-    ser2 = serial.Serial(port2, 9600)
-    ser.flushInput()
-    ser2.flushInput()
+ser = serial.Serial(port, 9600)
+ser2 = serial.Serial(port2, 9600)
+ser3 = serial.Serial(port3, 9600)
+ser.flushInput()
+ser2.flushInput()
+ser3.flushInput()
 
 
 def sensor_data():
-    smart_farm = str(ser.readline())
-    print(smart_farm)
-    smart_farm2 = str(ser2.readline())
-    #smart_farm=[1, 2, 3, 4]
-    print(smart_farm2)
-    smart_farm = re.sub('[^0-9,.]', "", smart_farm)
-    smart_farm2 = re.sub('[^0-9,.]', "", smart_farm2)
-    smart_farm = smart_farm.split(',')
-    smart_farm2 = smart_farm2.split(',')
-    if len(smart_farm) != 4 or len(smart_farm2) != 4:
+    farm = str(ser.readline())
+    print(farm)
+    farm2 = str(ser2.readline())
+    print(farm2)
+    farm = re.sub('[^0-9,.]', "", farm)
+    farm2 = re.sub('[^0-9,.]', "", farm2)
+    farm = farm.split(',')
+    farm2 = farm2.split(',')
+    if len(farm) != 4 or len(farm2) != 4:
         return 0
+    if(farm[0] == '1'):
+        smart_farm = list(farm)
+    else:
+        smart_farm = list(farm2)
+    
+    if(farm[0] == '2'):
+        smart_farm2 = list(farm)
+    else:
+        smart_farm2 = list(farm2)
+    
     time = datetime.datetime.now()
     date = time.strftime('%Y-%m-%d %H:%M:%S')
     message = {"farm_id": farm_id, "tmp": smart_farm2[3], "co2": smart_farm[1], "humidity": smart_farm2[2],"illuminance": smart_farm2[1], "mos": smart_farm[2], "ph": smart_farm[3], "measure_date": date}
@@ -87,17 +76,38 @@ def on_message(mqttc, obj, msg):
         payload = msg.payload.decode('utf-8')
         j = json.loads(payload)
         print(j)
-        water ="<" + str(j['water'])+","
-        tmp = "<" + str(j['tmp']) + ","
-        led = str(j['led'])+">"
-        window = str(j['window'])+">"
-        s1 = water + window
-        s2 = tmp + led
-        print(s1, s2)
-        ser.write(s1.encode('utf-8'))
-        ser2.write(s2.encode('utf-8'))
+        water =str(j['water'])
+        tmp = str(j['tmp'])
+        led = str(j['led'])
+        farm = str(ser.readline())
+        print(farm)
+        farm2 = str(ser2.readline())
+        print(farm2)
+        farm = re.sub('[^0-9,.]', "", farm)
+        farm2 = re.sub('[^0-9,.]', "", farm2)
+        farm = farm.split(',')
+        farm2 = farm2.split(',')
+        if len(farm) != 4 or len(farm2) != 4:
+            return 0
+        if(farm[0] == '1'):
+            s1 = water.encode('utf-8')
+        elif(farm2[0] == '1'):
+            s2 = water.encode('utf-8')
+        
+        if(farm[0] == '2'):
+            s1 = tmp.encode('utf-8')
+        elif(farm2[0] == '2'):
+            s2 = tmp.encode('utf-8')
+        
+        s3 = led.encode('utf-8')
+        print(s1, s2, s3)
+        time.sleep(3)
         direct_message = {"farm_id": farm_id}
-        mqtt_client.publish(directControl_pub, json.dumps(direct_message), qos=1) 
+        mqtt_client.publish(directControl_pub, json.dumps(direct_message), qos=1)
+        ser.write(s1)
+        ser2.write(s2)
+        ser3.write(s3)
+        print(direct_message)
 
     if msg.topic == imageControl_sub:
         payload = msg.payload.decode('utf-8')
@@ -113,13 +123,13 @@ def on_message(mqttc, obj, msg):
         j = json.loads(payload)
         if str(j['farm_id']) == farm_id:
             message = sensor_data()
-            time.sleep(1)
             mqtt_client.publish(sensorControl_pub, json.dumps(message), qos=1)
             print("Published: '" + json.dumps(message) + "' to the topic: " + sensorControl_pub)
 
 
 def hour_send():
     message = sensor_data()
+    print(message)
     if message == 0:
         time.sleep(1)
         message = sensor_data()
