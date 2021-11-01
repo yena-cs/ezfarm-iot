@@ -54,23 +54,30 @@ if len(sys.argv) == 6:
     a3 = sys.argv[3]
     a4 = sys.argv[4]
     a5 = sys.argv[5]
-    TOPIC += str(a1)
-    SUB += str(a1)
-    s2 = '0'
-    s3 = '0'
-    s4 = '0'
-    s5 = '0'
-    if a2 == 'ON':
-        s2 = '1'
-    if a4 == 'ON':
-        s4 = '1'
-    if a5 == 'ON':
-        s5 = '1'
-    message = {'water': s2, 'tmp': a3, 'led': s4, 'window': s5}
-    mqtt_client.publish(TOPIC, json.dumps(message), qos=1)
-    mqtt_client.subscribe(SUB, qos=0)
-    mqtt_client.loop_forever()
+
+    if str(a1)=="1":
+        s1 = "194"
+    
+        TOPIC += s1
+        SUB += s1
+        s2 = '0'
+        s3 = '0'
+        s4 = '0'
+        s5 = '0'
+        if a2 == 'ON':
+            s2 = '1'
+        if a4 == 'ON':
+            s4 = '1'
+        if a5 == 'ON':
+            s5 = '1'
+        message = {'water': s2, 'tmp': a3, 'led': s4, 'window': s5}
+        mqtt_client.publish(TOPIC, json.dumps(message), qos=1)
+        time.sleep(3)
+        print(1)
+    else:
+        print(0)
 else:
     result = 0
     print(result)
+
 
